@@ -21,7 +21,7 @@ install_if_needed <- function(package, github_repo = NULL) {
 # Check and install the 'icons' package from GitHub if not already installed
 install_if_needed("icons", github_repo = "mitchelloharawild/icons")
 
-# Lista de pacotes
+# Packages list
 packages <- c("shiny", "leaflet", "raster", "DT", "shinyWidgets", 
               "sf", "leafem", "mapview", "gdistance", "dplyr", 
               "shinyFiles", "zip", "leaflet.extras", 
@@ -36,88 +36,55 @@ if (length(new_packages)) {
   install.packages(new_packages)
 }
 
-# Carregar pacotes
-invisible(lapply(packages, function(pkg) {
-  suppressWarnings(library(pkg, character.only = TRUE))
-}))
+# Load required packages ----
+library("classInt")
+library("dplyr")
+library ("DT")
+library("fontawesome")
+library("gdistance")
+library("icons")
+library("leafem")
+library("leaflet")
+library("leaflet.extras")
+library("mapview")
+library("raster")
+library("RColorBrewer")
+library("shiny")
+library("shinyFiles")
+library("shinyWidgets")
+library("shinyalert")
+library("shinyjs")
+library("sf")
+library("terra")
+library("tools")
+library("units")
+library("zip")
+# terraOptions(memfrac = 0.9, progress  = 1) # Set terra options
 
-terraOptions(memfrac = 0.9, progress  = 1) # Set terra options
+### Initialize objects ----
 
-### Load shp in folder using a for loop
-# Directory containing the shapefiles
-shapefile_directory <- "../_4_Dados/Shapefiles"
+# Create objects from sheet 
+AssignObjectsFromGsheet("https://docs.google.com/spreadsheets/d/1AR3T45pZ2y5CO1A2PYKXn4HxVh9xyB7CZnjnY1zy26E/edit?usp=sharing")
 
-# List all .shp files in the directory
-shapefile_files <- list.files(shapefile_directory, pattern = "\\.shp$", full.names = TRUE)
+# Initialize the lists to store the default objects
+default_shapefiles <- list() # List for vectors
+default_layers <- list() # List for rasters
 
-# Initialize the list to store the default shapefile objects
-default_shapefiles <- list()
-
-# Manually specify the names you want to assign to each shapefile
-custom_names <- c("Area_do_Projeto", "AAVC","Area_oficina", "Areas_Especiais", 
-                  "IIC", "Propriedades", "RPPN")  # Update this with appropriate names
-
-# Check if the number of custom names matches the number of shapefile files
-if (length(custom_names) == length(shapefile_files)) {
-  # Loop through each shapefile file and create a shapefile object with custom names
-  for (i in seq_along(shapefile_files)) {
-    shapefile_file <- shapefile_files[i]
-    custom_name <- custom_names[i]
-    
-    # Read the shapefile
-    shapefile_object <- st_read(shapefile_file)
-    
-    # Transform the shapefile object to the desired CRS for plotting on map (e.g., WGS84, EPSG:4326)
-    shapefile_object <- st_transform(shapefile_object, crs = 4326)
-    
-    # Assign the shapefile object to a variable named after the custom name
-    assign(custom_name, shapefile_object, envir = .GlobalEnv)
-    
-    # Assign the shapefile object to a list element with the custom name
-    default_shapefiles[[custom_name]] <- shapefile_object
-  }
-  
-} else {
-  stop("The number of custom names does not match the number of shapefile files.")
+# Add the objects to the reactive lists based on their type
+# Vector objects
+if (inherits(get(object, envir = .GlobalEnv), "sf")) {
+  default_shapefiles[[object]] <- get(object, envir = .GlobalEnv)
 }
-
-### Load raster in folder using a for loop
-# Directory containing the raster files
-raster_directory <- "../_4_Dados/Raster"
-
-# List all .tif files in the directory
-raster_files <- list.files(raster_directory, pattern = "\\.tif$", full.names = TRUE)
-
-# Initialize the list to store the default raster objects
-default_layers <- list()
-
-# Manually specify the names you want to assign to each raster
-custom_names <- c("Areas_Especiais_rst",
-                  "Uso_do_Solo", "propriedades_rst", "PUC")
-
-# Check if the number of custom names matches the number of raster files
-if (length(custom_names) == length(raster_files)) {
-  # Loop through each raster file and create a raster object with custom names
-  for (i in seq_along(raster_files)) {
-    raster_file <- raster_files[i]
-    custom_name <- custom_names[i]
-    
-    # Assign the raster object to a variable named after the custom name
-    assign(custom_name, rast(raster_file))
-    
-    # Assign the raster object to a list element with the custom name
-    default_layers[[custom_name]] <- rast(raster_file)
-  }
-} else {
-  stop("The number of custom names does not match the number of raster files.")
+# Raster objects
+if (inherits(get(object, envir = .GlobalEnv), "SpatRaster")) {
+  default_layers[[object]] <- get(object, envir = .GlobalEnv)
 }
 
 # Define custom control names
-custom_control <- setdiff (c(names (default_layers), names (default_shapefiles), "CMPC"),
-                           c("Areas_Especiais_rst", "AAVC", "RPPN", "SEUC", "areas_umidas_FZB", 
-                             "AZE", "BAZE","IBA", "RBMA", "propriedades_rst"))
+custom_control <- setdiff (c(names (default_layers), names (default_shapefiles)),
+                           c())
 
-### 1. Define reactive values 
+### Define reactive values ----
 all_points <- reactiveVal(list()) # For storing all points
 all_reclassified_rasters <- reactiveVal(list()) # Create a reactive list to hold all reclassified rasters
 all_reclassified_rasters_aggregated <- reactiveVal(list()) # Create a reactive list to hold all aggregated reclassified rasters 
