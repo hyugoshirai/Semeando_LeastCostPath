@@ -71,14 +71,7 @@ default_shapefiles <- list() # List for vectors
 default_layers <- list() # List for rasters
 
 # Add the objects to the reactive lists based on their type
-# Vector objects
-if (inherits(get(object, envir = .GlobalEnv), "sf")) {
-  default_shapefiles[[object]] <- get(object, envir = .GlobalEnv)
-}
-# Raster objects
-if (inherits(get(object, envir = .GlobalEnv), "SpatRaster")) {
-  default_layers[[object]] <- get(object, envir = .GlobalEnv)
-}
+CategorizeAndReprojectObjectsInGlobalEnv()
 
 # Define custom control names
 custom_control <- setdiff (c(names (default_layers), names (default_shapefiles)),

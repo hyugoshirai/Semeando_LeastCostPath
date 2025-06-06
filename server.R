@@ -3,8 +3,7 @@ server <- function(input, output, session) {
   
   ### 1. Render map
   output$map <- renderLeaflet({
-    initializeMap(Uso_do_Solo, RPPN, Area_do_Projeto, AAVC, Areas_Especiais, 
-                  PUC, Area_oficina, Propriedades, IIC)
+    initializeMap(`Uso do solo`, `Imóveis`)
   })
   
   ### 2. Update the basemap when selection changes

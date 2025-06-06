@@ -86,7 +86,7 @@ Property_values <- c(3, 2, 1)
 # 3 color scale, blind friendly
 Property_colors <- c("#FE0000", "#FFFF11", "#3C78D8")
 
-Property_labels <- c("Grande", "Media", "Pequena")
+Property_labels <- c("Grande", "Média", "Pequena")
 # Create the color factor palette
 Property_pal <- colorFactor(palette = Property_colors, na.color = "transparent", domain = Property_labels)
 
