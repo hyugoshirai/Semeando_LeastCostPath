@@ -1,40 +1,40 @@
-# Check if 'remotes' package is installed
-if (!requireNamespace("remotes", quietly = TRUE)) {
-  install.packages("remotes")
-}
-
-# Function to check if a package is installed, if not, install it
-install_if_needed <- function(package, github_repo = NULL) {
-  if (!requireNamespace(package, quietly = TRUE)) {
-    if (!is.null(github_repo)) {
-      message(paste(package, "is not installed. Installing from GitHub repository:", github_repo))
-      remotes::install_github(github_repo)
-    } else {
-      message(paste(package, "is not installed. Installing from CRAN."))
-      install.packages(package)
-    }
-  } else {
-    message(paste(package, "is already installed."))
-  }
-}
-
-# Check and install the 'icons' package from GitHub if not already installed
-install_if_needed("icons", github_repo = "mitchelloharawild/icons")
-
-# Packages list
-packages <- c("shiny", "leaflet", "raster", "DT", "shinyWidgets", 
-              "sf", "leafem", "mapview", "gdistance", "dplyr", 
-              "shinyFiles", "zip", "leaflet.extras", 
-              "shinyjs", "classInt", "leastcostpath", "terra", "units", "tools",
-              "shinyalert", "icons", "fontawesome", "RColorBrewer")
-# library(icons)
-# download_fontawesome() #only if needed
-
-# Instalar pacotes que não estão instalados
-new_packages <- packages[!(packages %in% installed.packages()[, "Package"])]
-if (length(new_packages)) {
-  install.packages(new_packages)
-}
+# # Check if 'remotes' package is installed
+# if (!requireNamespace("remotes", quietly = TRUE)) {
+#   install.packages("remotes")
+# }
+# 
+# # Function to check if a package is installed, if not, install it
+# install_if_needed <- function(package, github_repo = NULL) {
+#   if (!requireNamespace(package, quietly = TRUE)) {
+#     if (!is.null(github_repo)) {
+#       message(paste(package, "is not installed. Installing from GitHub repository:", github_repo))
+#       remotes::install_github(github_repo)
+#     } else {
+#       message(paste(package, "is not installed. Installing from CRAN."))
+#       install.packages(package)
+#     }
+#   } else {
+#     message(paste(package, "is already installed."))
+#   }
+# }
+# 
+# # Check and install the 'icons' package from GitHub if not already installed
+# install_if_needed("icons", github_repo = "mitchelloharawild/icons")
+# 
+# # Packages list
+# packages <- c("shiny", "leaflet", "raster", "DT", "shinyWidgets", 
+#               "sf", "leafem", "mapview", "gdistance", "dplyr", 
+#               "shinyFiles", "zip", "leaflet.extras", 
+#               "shinyjs", "classInt", "leastcostpath", "terra", "units", "tools",
+#               "shinyalert", "icons", "fontawesome", "RColorBrewer")
+# # library(icons)
+# # download_fontawesome() #only if needed
+# 
+# # Instalar pacotes que não estão instalados
+# new_packages <- packages[!(packages %in% installed.packages()[, "Package"])]
+# if (length(new_packages)) {
+#   install.packages(new_packages)
+# }
 
 # Load required packages ----
 library("classInt")
@@ -60,6 +60,19 @@ library("tools")
 library("units")
 library("zip")
 # terraOptions(memfrac = 0.9, progress  = 1) # Set terra options
+
+#### Source Modules
+# Define the directory containing the R script files
+modules_directory <- "modules"
+
+# List all .R files in the directory
+script_files <- list.files(modules_directory, pattern = "\\.R$", full.names = TRUE)
+
+# Loop through each R file and source it
+for (script_file in script_files) {
+  source(script_file)
+  print (paste("Sourced", script_file))
+}
 
 ### Initialize objects ----
 
