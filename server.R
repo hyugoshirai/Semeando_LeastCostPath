@@ -4,9 +4,9 @@ server <- function(input, output, session) {
     stopApp()
   })
   
-  ### 1. Render map
+  ### 1. Render map ----
   output$map <- renderLeaflet({
-    initializeMap(`Uso do solo`, `Imóveis`, `Limite Cantareira`, `Áreas de Preservação Permanente`, `Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)`, `Declividade (porcentagem)`, `Distância de rodovias`)
+    initializeMap(`Uso do solo`, `Imóveis`, `Limite Cantareira`, `Áreas de Preservação Permanente`, `Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)`, `Declividade (porcentagem)`, `Distância de rodovias`, `Unidades de Conservação`, `Estradas`, `Limite de Municípios`)
   })
   
   # Overlay toggling logic (works for overlays only)
@@ -17,17 +17,29 @@ server <- function(input, output, session) {
       leg <- legends_list[[g]]
       if (!is.null(checked) && g %in% checked) {
         showGroup(proxy, g)
-        legend_args <- list(
-          layerId = leg$layerId,
-          position = "bottomleft",
-          pal = leg$pal,
-          values = leg$values,
-          title = leg$title,
-          opacity = 1,
-          group = g
-        )
-        if (!is.null(leg$labFormat)) legend_args$labFormat <- leg$labFormat
-        do.call(addLegend, c(list(proxy), legend_args))
+        if (!is.null(leg$pal) && !is.null(leg$values) && length(leg$values) > 0) {
+          # Standard palette legend
+          legend_args <- list(
+            layerId = leg$layerId,
+            position = "bottomleft",
+            pal = leg$pal,
+            values = leg$values,
+            title = leg$title,
+            opacity = 1
+          )
+          if (!is.null(leg$labFormat)) legend_args$labFormat <- leg$labFormat
+          do.call(addLegend, c(list(proxy), legend_args))
+        } else if (!is.null(leg$pal) && is.null(leg$values)) {
+          # Single color legend
+          proxy %>% addLegend(
+            layerId = leg$layerId,
+            position = "bottomleft",
+            colors = leg$pal,
+            labels = leg$title,
+            opacity = 1
+          )
+        }
+        # If neither, skip legend for this group
       } else {
         hideGroup(proxy, g)
         proxy %>% removeControl(layerId = leg$layerId)
@@ -49,7 +61,7 @@ server <- function(input, output, session) {
     }
   })
   
-  ### 3. Handle landuse reclassification and map update
+  ### 3. Handle landuse reclassification and map update ----
   # Output for the dropdown UI
   output$dropdownDefaultLayers <- renderUI({
     current_layers <- names(default_layers)
@@ -58,11 +70,10 @@ server <- function(input, output, session) {
   
   DefaultRasterReclassification(id= "Reclassify_table", input, output, session, landuse_df, input$dropdownDefaultLayers)
   
-  ### 4. Handle map drawing events
+  ### 4. Handle map drawing events ----
   DrawPoints(input, output, session, all_points)
   
-  
-  ### 5. Function to process the uploaded shapefile
+  ### 5. Function to process the uploaded shapefile ----
   shapefile_data_processed <- reactiveVal(NULL)
   observeEvent(input$shapefile, {
     req(input$shapefile)
@@ -88,7 +99,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # ### 7. Shapefile tab
+  # ### 7. Shapefile tab  ----
   observeEvent(input$new_shp_tab, {
     req(input$shapefile_name)
     shapefile_data_processed <- shapefile_data_processed()
@@ -282,7 +293,7 @@ server <- function(input, output, session) {
     })
   })
   
-  ### 6. Function to add the shapefile to the map
+  ### 6. Function to add the shapefile to the map  ----
   observeEvent(input$add_shapefile, {
     req(input$shapefile_name)
     shapefile_name <- input$shapefile_name
@@ -295,18 +306,17 @@ server <- function(input, output, session) {
     addShapefileToMap(shapefile_data_processed(), new_layer_name)
   })
   
-  ### 8. Execute shortest path
+  ### 8. Execute shortest path  ----
   # Observer to monitor result_raster and all_points and show or hide the button
   observe({
     # Ensure both result_raster and all_points return valid values
-    if (# !is.null(result_raster()) && is(result_raster(), "RasterLayer") ||
-      input$calculate_button > 0 &&
-      !is.null(all_points()) && length(all_points()) > 1) {
+    if (input$calculate_button > 0) {
       shinyjs::show("execute_shortest_path") # Show the execute_shortest_path button
     } else {
       shinyjs::hide("execute_shortest_path") # Hide the execute_shortest_path button
     }
   })
+  
   observeEvent(input$execute_shortest_path, {
     points_list <- all_points()  # Get the list of points
     points_combined_sf <- do.call(rbind, points_list)
@@ -321,16 +331,13 @@ server <- function(input, output, session) {
     new_color <- generateColor()
     
     # Use the result_raster selected from the dropdown
-     
     # Fetch the selected raster name
     selected_raster <- input$result_dropdown
 
     # Use the selected raster key to get the corresponding value from your data
     all_reclassified_rasters <- all_reclassified_rasters()
-    # result_raster_selected <- all_reclassified_rasters [selected_raster]
     result_raster_selected <- all_reclassified_rasters()[[selected_raster]]
     
-    # sp_result <- executeShortestPath(result_raster(), points_combined_sf, session)
     sp_result <- executeShortestPath(result_raster_selected, points_combined_sf, session)
     
     # Store the new shortest path result into reactive values (to color different)
@@ -342,15 +349,13 @@ server <- function(input, output, session) {
     updateList (sp_result, new_layer_name, all_shapefiles)
     
     # Show the buffer related inputs
-    # shinyjs::toggle(id = "buffer_div")
     shinyjs::show(id = "buffer_value")
     shinyjs::show(id = "buffer_button")
-    
     
     addShortestPathToMap(sp_result, "map", new_layer_name, new_color)
   })
   
-  ### 9. Calculate tab
+  ### 9. Calculate tab  ----
   # Reactive values
   rv <- reactiveValues(dropdowns = NULL, multipliers = NULL)
   
@@ -484,7 +489,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # ### 10. Download selected layers
+  # ### 10. Download selected layers  ----
   # Output for the dropdown UI
   output$download_dropdown_tabDownload <- renderUI({
     current_layers <- c(getCurrentLayerNames(),names(all_reclassified_rasters()))

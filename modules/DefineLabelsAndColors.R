@@ -19,13 +19,14 @@ landuse_df <- data.frame(
   new_value = c(100, 70, 1, 1, 50, 40, 50),
   stringsAsFactors = FALSE
 )
+
 # =================== Special Areas
 # Define the raster values directly
-spa_values <- c(1:5)
+spa_values <- c(1:2)
 
 # Define land use labels and colors
-spa_colors <- c("#345c32", "#BFFF00", "#9b7bb8", "#f5c840", "#9c3f28")
-spa_labels <- c ("UC de Proteção Integral", "UC de Uso Sustentável","Área Prioritária", "Terra Indígena", "Área quilombola")
+spa_colors <- c("#345c32", "#BFFF00")
+spa_labels <- c ("PI", "US")
 
 # Create the color factor palette
 spa_pal <- colorFactor(palette = spa_colors,na.color = "transparent", domain = spa_labels)
@@ -34,7 +35,7 @@ spa_pal <- colorFactor(palette = spa_colors,na.color = "transparent", domain = s
 spa_df <- data.frame(
   raster_value = spa_values,
   spa = factor(spa_values, levels = spa_values, labels = spa_labels),
-  new_value =  c(100, 50, 30, 100, 60),
+  new_value =  c(100, 50),
   stringsAsFactors = FALSE
 )
 
@@ -118,12 +119,30 @@ slope_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# =================== APP
+# Define the raster values directly
+APP_values <- c(1)
+
+# Define land use labels and colors
+APP_colors <- c("#1D0AC4")
+APP_labels <- c ("1")
+
+# Create the color factor palette
+APP_pal <- colorFactor(palette = APP_colors,na.color = "transparent", domain = APP_labels)
+
+# Create the data frame with static values
+APP_df <- data.frame(
+  raster_value = APP_values,
+  APP = factor(APP_values, levels = APP_values, labels = APP_labels),
+  new_value =  c(100),
+  stringsAsFactors = FALSE
+)
 # =================== roads
 
 # Define labels and colors
 
 # Create the color factor palette
-roads_pal <- colorNumeric(palette = "viridis", domain = values(`Distância de rodovias`), na.color = "transparent")
+roads_dist_pal <- colorNumeric(palette = "viridis", domain = values(`Distância de rodovias`), na.color = "transparent")
 
 # # Create the data frame with static values
 # roads_df <- data.frame(
@@ -140,29 +159,34 @@ roads_pal <- colorNumeric(palette = "viridis", domain = values(`Distância de ro
 roads_range <- as.numeric(terra::global(`Distância de rodovias`, range, na.rm = TRUE)) # vector of min, max
 
 legends_list <- list(
-  "Áreas Especiais" = list(
+  "Unidades de Conservação" = list(
     pal = spa_pal,
-    values = spa_values,
-    title = "Áreas Especiais",
-    layerId = "legend_Áreas Especiais",
-    labFormat = labelFormat(transform = function(x) spa_df$spa[match(x, spa_df$raster_value)])
+    values = unique(`Unidades de Conservação`$GRUPO4),
+    title = "Unidades de Conservação",
+    layerId = "legend_Unidades de Conservação",
+    labFormat = labelFormat()
+  ),
+  "Áreas Especiais" = list( #Only for reclassification
+    df = spa_df
   ),
   "Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)" = list(
     pal = PUC_pal,
     values = PUC_values,
     title = "PUC",
     layerId = "legend_Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)",
-    labFormat = labelFormat(transform = function(x) PUC_df$PUC[match(x, PUC_df$raster_value)])
+    labFormat = labelFormat(transform = function(x) PUC_df$PUC[match(x, PUC_df$raster_value)]),
+    df = PUC_df
   ),
   "Declividade (porcentagem)" = list(
     pal = slope_pal,
     values = slope_values,
     title = "Declividade (%)",
     layerId = "legend_Declividade (porcentagem)",
-    labFormat = labelFormat(transform = function(x) slope_df$slope[match(x, slope_df$raster_value)])
+    labFormat = labelFormat(transform = function(x) slope_df$slope[match(x, slope_df$raster_value)]),
+    df = slope_df
   ),
   "Distância de rodovias" = list(
-    pal = roads_pal,
+    pal = roads_dist_pal,
     values = roads_range,
     title = "Distância de rodovias (m)",
     layerId = "legend_Distância de rodovias",
@@ -173,14 +197,18 @@ legends_list <- list(
     values = lu_raster_values,
     title = "Uso do Solo",
     layerId = "legend_Uso do Solo",
-    labFormat = labelFormat(transform = function(x) landuse_df$land_use[match(x, landuse_df$raster_value)])
+    labFormat = labelFormat(transform = function(x) landuse_df$land_use[match(x, landuse_df$raster_value)]),
+    df = landuse_df
   ),
   "Imóveis" = list(
     pal = Property_pal,
-    values = Property_values,
+    values = Imóveis$Tamanho,
     title = "Imóveis",
     layerId = "legend_Imóveis",
-    labFormat = labelFormat(transform = function(x) Property_df$Property[match(x, Property_df$raster_value)])
+    labFormat = labelFormat()
+  ),
+  "Propriedades rurais (categorias: pequena, média e grande)" = list( # Only for reclassification
+    df = Property_df
   ),
   "Índice Integral de Conectividade" = list(
     pal = IIC_pal,
@@ -188,11 +216,34 @@ legends_list <- list(
     title = "IIC",
     layerId = "legend_IIC",
     labFormat = labelFormat(transform = function(x) IIC_df$IIC[match(x, IIC_df$raster_value)])
+  ),
+  "Áreas de Preservação Permanente" = list(
+    pal = "#1D0AC4", 
+    values = NULL, 
+    title = "Áreas de Preservação Permanente",
+    layerId = "legend_Áreas de Preservação Permanente",
+    labFormat = NULL,
+    df = APP_df
+  ),
+  "Limite Cantareira" = list(
+    pal = "red",
+    values = NULL,
+    title = "Limite Cantareira",
+    layerId = "legend_Limite Cantareira",
+    labFormat = NULL
+  ),
+  "Estradas" = list(
+    pal = "black",
+    values = NULL,
+    title = "Estradas",
+    layerId = "legend_Estradas",
+    labFormat = NULL
+  ),
+  "Limite de Municípios" = list(
+    pal = "grey",
+    values = NULL,
+    title = "Limite de Municípios",
+    layerId = "legend_Limite de Municípios",
+    labFormat = NULL
   )
-  # Optional: Only add below if you want them in graphical controls
-  # "Estradas" = list(...),
-  # "Áreas de Preservação Permanente" = list(...),
-  # "Limite Cantareira" = list(...),
-  # "Limite de Municípios" = list(...),
-  # "Unidades de Conservação" = list(...)
 )

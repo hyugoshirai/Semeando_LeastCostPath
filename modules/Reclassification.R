@@ -17,17 +17,10 @@ DefaultRasterReclassification <- function(id, input, output, session, landuse_df
       
       # Reset the reclassification data frame
       rv$df <- NULL
-      if (DefaultRaster_name %in% c("Uso do solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
+      if (DefaultRaster_name %in% setdiff (names (default_layers), c("Distância de rodovias"))){
         print("first condition - Categorical Values")
         shinyjs::hide("defaultrst_number_of_intervals")
-        if (DefaultRaster_name == "Uso do solo") {
-          rv$df <- landuse_df}
-        if (DefaultRaster_name == "Areas_Especiais_rst") {
-          rv$df <- spa_df}
-        if (DefaultRaster_name == "PUC") {
-          rv$df <- PUC_df}
-        if (DefaultRaster_name == "propriedades_rst") {
-          rv$df <- Property_df}
+        rv$df <- legends_list[[DefaultRaster_name]]$df
         
         output[["first_condition"]] <- renderDT({
           datatable(rv$df, editable = list(target = "cell", disable = list(columns = c(1, 2))))
@@ -182,7 +175,7 @@ DefaultRasterReclassification <- function(id, input, output, session, landuse_df
     reclass_df <- rv$df
     
     # Create a reclassification matrix
-    if (DefaultRaster_name %in% c("Uso do solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
+    if (DefaultRaster_name %in% setdiff (names (default_layers), c("Distância de rodovias"))){
       reclass_matrix <- as.matrix(reclass_df[, c("raster_value", "new_value")])
     } else {
       reclass_matrix <- as.matrix(reclass_df)
@@ -202,7 +195,7 @@ DefaultRasterReclassification <- function(id, input, output, session, landuse_df
     
     
     # Assign a name to the reclassified raster
-    name <- paste0("Reclassified for ", DefaultRaster_name)
+    name <- paste0("Reclassificado de ", DefaultRaster_name)
     
     # Update the reactive list of reclassified rasters
     updateList (reclassified_raster, name, all_reclassified_rasters)

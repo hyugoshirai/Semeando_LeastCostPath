@@ -32,8 +32,6 @@ ui <- fluidPage(
             class = "map-sidebar",
             fileInput("shapefile", "Carregar Shapefile (ZIP)"),
             actionButton("add_shapefile", "Adicione o Shapefile para o mapa", style = "display: none;"),
-            uiOutput("ResultRasterList"),
-            actionButton("execute_shortest_path", "Executar caminho menos custoso", style = "display: none;"),
             uiOutput("sp_list"),
             selectInput(
               "basemap",
@@ -46,9 +44,12 @@ ui <- fluidPage(
                 "overlays",
                 label = NULL,
                 choices = custom_control,
-                selected = c("Imóveis", "Uso do solo")
+                selected = c("Limite Cantareira")
               )
-            )
+            ),
+            uiOutput("ResultRasterList"),
+            # actionButton("execute_shortest_path", "Executar caminho menos custoso", style = "display: none;"),
+            actionButton("execute_shortest_path", "Executar caminho menos custoso"),
           )
         ),
         column(

@@ -22,12 +22,15 @@ library("units")
 library("zip")
 # terraOptions(memfrac = 0.9, progress  = 1) # Set terra options
 
-#### Source Modules
+#### Source Modules ----
 # Define the directory containing the R script files
 modules_directory <- "modules"
 
 # List all .R files in the directory
 script_files <- list.files(modules_directory, pattern = "\\.R$", full.names = TRUE)
+# Modules to be sourced after initializing objects
+late_objects_modules <- c("DefineLabelsAndColors.R")
+script_files <- script_files[!basename(script_files) %in% late_objects_modules] # Exclude late objects modules
 
 # Loop through each R file and source it
 for (script_file in script_files) {
@@ -44,12 +47,20 @@ AssignObjectsFromGsheet("https://docs.google.com/spreadsheets/d/1AR3T45pZ2y5CO1A
 default_shapefiles <- list() # List for vectors
 default_layers <- list() # List for rasters
 
-# Add the objects to the reactive lists based on their type
+# Add the objects to the reactive lists based on their type ----
 CategorizeAndReprojectObjectsInGlobalEnv()
 
-# Define custom control names
+# Now source late modules that depend on the initialized objects
+for (late_module in late_objects_modules) {
+  source(file.path(modules_directory, late_module))
+  print(paste("Sourced late module:", late_module))
+}
+
+# Define custom control names ----
 custom_control <- setdiff (c(names (default_layers), names (default_shapefiles)),
-                           c("Propriedades rurais (categorias: pequena, média e grande)"))
+                           c("Propriedades rurais (categorias: pequena, média e grande)",
+                             "Áreas Especiais"))
+
 # Define Base Map Providers ----
 base_groups <- c("OpenStreetMap", "Satellite")
 

@@ -1,5 +1,5 @@
 # Function to initialize the map with the land use raster image
-initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope, d_roads) 
+initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope, d_roads, protected_areas, roads, municipalities) 
 {
   # aggregate the raster for faster visualization
   factor <- 5
@@ -19,18 +19,31 @@ initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope
               fillOpacity = 0,
               group = "Limite Cantareira"
   ) |>
-    #   #==================== ProjectArea ====================
-  # # Add Área do Projeto layer
-  # addPolygons(data = ProjectArea, 
-  #             color = "grey",    # Border color of polygons
-  #             weight = 1,        # Border width of polygons
-  #             opacity = 1,       # Border opacity
-  #             group = "Area_do_Projeto"
-  # ) |>  
+    # #==================== municipalities ====================
+  # # Add municipalities layer
+  addPolygons(data = municipalities,
+              color = "grey",    # Border color of polygons
+              weight = 1,        # Border width of polygons
+              opacity = 1,       # Border opacity
+              fillOpacity = 0,
+              group = "Limite de Municípios",
+              popup = ~paste("Município: ", NM_MUN, "<br>",
+                             "Código do Município: ", CD_MUN, "<br>",
+                             "Estado: ", NM_UF, "<br>")
+  ) |>
+    #   #==================== roads ====================
+  # # Add roads lines
+  addPolygons(data = roads,
+               color = "black",    # Color of the roads
+               weight = 1.5,         # Width of the roads
+               opacity = 0.5,      # Opacity of the roads
+               fillOpacity = 0,
+               group = "Estradas"
+  ) |>
   # #==================== APP ====================
   # # Add APP layer
     addRasterImage(APP,
-                   colors = "blue",
+                   colors = APP_pal,
                    group = "Áreas de Preservação Permanente",
                    project = TRUE,
                    method = 'ngb'
@@ -56,7 +69,7 @@ initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope
               group = "Imóveis",
               popup = ~paste(
                 "Módulos: ", round(ifelse(is.na(qtd_Mod), 0, qtd_Mod),2), "<br>", 
-                "Área: ", round(area_ha, 2), " ha")
+                "Área: ", round(NUM_AREA, 2), " ha")
   ) |>
     #==================== Uso_do_Solo ====================
   addRasterImage(Uso_do_Solo_agg,
@@ -66,16 +79,19 @@ initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope
                  method = 'ngb'
   ) |>
     # #==================== Areas_Especiais ====================
-  # #Add Areas Especiais layer
-  # addPolygons(
-  #   data = Areas_Especiais,
-  #   color = ~spa_pal(Tipo),
-  #   weight = 1,
-  #   opacity = 1,
-  #   fillOpacity = 0.5,
-  #   group = "Areas_Especiais",
-  #   popup = ~paste(NOME_UC1, COD_area_1, nm_comunid, terrai_nom, COD_area)
-  # ) %>%
+  #Add Areas Especiais layer
+  addPolygons(
+    data = protected_areas,
+    color = ~spa_pal(GRUPO4),
+    weight = 1,
+    opacity = 1,
+    fillOpacity = 0.5,
+    group = "Unidades de Conservação",
+    popup = ~paste("Nome da UC: ", NOME_UC1, "<br>",
+                   "Código da Área: ", CODIGO_U11, "<br>",
+                   "Categoria: ", CATEGORI3, "<br>",
+                   "Tipo: ", GRUPO4, "<br>")
+    ) %>%
   # #==================== PUC ====================
   # Add PUC raster layer
   addRasterImage(PUC_agg,
@@ -121,19 +137,5 @@ initializeMap <- function(LandUse_rst, properties, study_region, APP, PUC, slope
       position = "topright",
       primaryLengthUnit = "meters",
       primaryAreaUnit = "sqmeters"
-    ) %>%
-    # # Layer control
-    # addLayersControl(
-    #   baseGroups = c("OpenStreetMap", "Satellite"),
-    #   overlayGroups = custom_control,  # Ensure unique layers are listed
-    #   options = layersControlOptions(collapsed = TRUE)
-    # ) |>
-    hideGroup(c(
-      "Áreas de Preservação Permanente",
-      "Imóveis",
-      "Uso do solo",
-      "Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)",
-      "Declividade (porcentagem)",
-      "Distância de rodovias"
-    ))
+    )
 }
