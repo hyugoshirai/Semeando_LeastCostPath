@@ -60,8 +60,8 @@ executeShortestPath <- function(result_raster, all_points, session) {
   corridor_sf <- st_transform(corridor_sf, crs = 4326)
   corridor_sf <- corridor_sf %>%
     mutate(pair_id = ifelse(fromCell < toCell, paste(fromCell, toCell, sep = ","), paste(toCell, fromCell, sep = ","))) %>%
-    distinct(pair_id, .keep_all = TRUE) %>%
-    select(-pair_id)
+    distinct(pair_id, .keep_all = TRUE) #%>%
+    # select(-pair_id)
 
   return(corridor_sf)
 }

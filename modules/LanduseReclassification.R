@@ -17,10 +17,10 @@ DefaultRasterReclassification <- function(id, input, output, session, landuse_df
       
       # Reset the reclassification data frame
       rv$df <- NULL
-      if (DefaultRaster_name %in% c("Uso_do_Solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
+      if (DefaultRaster_name %in% c("Uso do solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
         print("first condition - Categorical Values")
         shinyjs::hide("defaultrst_number_of_intervals")
-        if (DefaultRaster_name == "Uso_do_Solo") {
+        if (DefaultRaster_name == "Uso do solo") {
           rv$df <- landuse_df}
         if (DefaultRaster_name == "Areas_Especiais_rst") {
           rv$df <- spa_df}
@@ -182,7 +182,7 @@ DefaultRasterReclassification <- function(id, input, output, session, landuse_df
     reclass_df <- rv$df
     
     # Create a reclassification matrix
-    if (DefaultRaster_name %in% c("Uso_do_Solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
+    if (DefaultRaster_name %in% c("Uso do solo", "Areas_Especiais_rst", "PUC", "propriedades_rst")){
       reclass_matrix <- as.matrix(reclass_df[, c("raster_value", "new_value")])
     } else {
       reclass_matrix <- as.matrix(reclass_df)

@@ -1,5 +1,4 @@
 ui <- fluidPage(
-  # Spinner overlay
   div(
     id = "loading-overlay",
     div(
@@ -20,76 +19,63 @@ ui <- fluidPage(
      }
      setInterval(checkifrunning, 100);'
   ),
-  
-  # Include custom CSS to define map size and button panel
-  tags$head(
-    tags$style(HTML("
-      .leaflet-container {
-        height: 100%;
-        width: 100%;
-      }
-      #map {
-        height: calc(100vh - 60px); /* Adjust based on the height needed for buttons */
-        width: 100%;
-      }
-      .button-panel {
-        margin: 10px 0;
-      }
-    ")),
-    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
-  ),
-  useShinyjs(),
   titlePanel("Análise de áreas prioritárias"),
-  sidebarLayout(
-    sidebarPanel(
-      actionButton("help_button", "Clique aqui para ajuda", icon = icon("info-circle")),
-      fileInput("shapefile", "Carregar Shapefile (ZIP)"),
-      actionButton("add_shapefile", "Adicione o Shapefile para o mapa", style = "display: none;"),
-      # fileInput("raster", "Carregar Raster (TIF)"),
-      uiOutput("ResultRasterList"), # Placeholder to render dropdown for result rasters
-      actionButton("execute_shortest_path", "Executar caminho menos custoso", style = "display: none;"),
-      uiOutput("sp_list"),  # Placeholder to render dropdown for shortest paths
-      
-      width = 4  # Make the sidebar panel thicker
-    ),
-    mainPanel(
-      tabsetPanel(
-        id = "dynamic_tabs",
-        tabPanel("Mapa",
-                 fluidRow(
-                   column(12, leafletOutput("map", height = "85vh")),
-                 )
+  actionButton("help_button", "Clique aqui para ajuda", icon = icon("info-circle")),
+  tabsetPanel(
+    id = "dynamic_tabs",
+    tabPanel(
+      title = "Mapa",
+      fluidRow(
+        column(
+          width = 4,
+          div(
+            class = "map-sidebar",
+            fileInput("shapefile", "Carregar Shapefile (ZIP)"),
+            actionButton("add_shapefile", "Adicione o Shapefile para o mapa", style = "display: none;"),
+            uiOutput("ResultRasterList"),
+            actionButton("execute_shortest_path", "Executar caminho menos custoso", style = "display: none;"),
+            uiOutput("sp_list"),
+            selectInput(
+              "basemap",
+              "Escolha o Mapa Base:",
+              choices = c("OpenStreetMap", "Satellite")
+            ),
+            tags$details(
+              tags$summary(tags$b("Camadas (Clique para expandir)")),
+              checkboxGroupInput(
+                "overlays",
+                label = NULL,
+                choices = custom_control,
+                selected = c("Imóveis", "Uso do solo")
+              )
+            )
+          )
         ),
-        tabPanel("Aba para reclassificação",
-                 uiOutput("dropdownDefaultLayers"),  # Placeholder to render dropdown UI components
-                 h4("Tabela de reclassificação"),
-                 # Hidden numeric input
-                 hidden(
-                   numericInput("defaultrst_number_of_intervals", "Número de intervalos:", value = 5, min = 2, max = 20)
-                 ),
-                 # DTOutput("landuse_table"),
-                 DTOutput("Reclassify_table"),
-                 DTOutput("first_condition"),
-                 DTOutput("second_condition"),
-                 DTOutput("third_condition"),
-                 
-                 actionButton("apply_changes", "Aplicar reclassificação")
-        ),
-        tabPanel(
-          title = "Sobreposição de camadas",
-          fluidRow(
-            numericInput("number_of_layers", "Número de camadas:", value = 4, min = 1, max = 50),
-            uiOutput("dropdown_ui"),  # Placeholder to render dropdown UI components
-          ),
-          actionButton("calculate_button", "Sobrepor camadas"),  # Button to perform the operation
-          verbatimTextOutput("result_output")             # Display result or errors
-        ),
-        tabPanel(
-          title = "Download",
-          downloadButton("download_selected", "Baixar camadas selecionadas"),
-          uiOutput("download_dropdown_tabDownload"),  # Placeholder to render dropdown download
+        column(
+          width = 8,
+          leafletOutput("map", height = "95vh")
         )
       )
+    ),
+    tabPanel("Aba para reclassificação",
+             uiOutput("dropdownDefaultLayers"),
+             h4("Tabela de reclassificação"),
+             hidden(numericInput("defaultrst_number_of_intervals", "Número de intervalos:", value = 5, min = 2, max = 20)),
+             DTOutput("Reclassify_table"),
+             DTOutput("first_condition"),
+             DTOutput("second_condition"),
+             DTOutput("third_condition"),
+             actionButton("apply_changes", "Aplicar reclassificação")
+    ),
+    tabPanel("Sobreposição de camadas",
+             numericInput("number_of_layers", "Número de camadas:", value = 4, min = 1, max = 50),
+             uiOutput("dropdown_ui"),
+             actionButton("calculate_button", "Sobrepor camadas"),
+             verbatimTextOutput("result_output")
+    ),
+    tabPanel("Download",
+             downloadButton("download_selected", "Baixar camadas selecionadas"),
+             uiOutput("download_dropdown_tabDownload")
     )
   )
 )

@@ -97,3 +97,102 @@ Property_df <- data.frame(
   new_value = c(100, 80, 20),
   stringsAsFactors = FALSE
 )
+
+# =================== slope
+# Define the raster values directly
+slope_values <- c(1,2,3,4)
+
+# Define labels and colors
+# 3 color scale, blind friendly
+slope_colors <- c("#008B00", "#FFFF00", "#FF7F00", "#B22222")
+
+slope_labels <- c("baixa (<3%)", "média (3-8%)", "alta (8-15%)", "muito alta (>15%)")
+# Create the color factor palette
+slope_pal <- colorFactor(palette = slope_colors, na.color = "transparent", domain = slope_labels)
+
+# Create the data frame with static values
+slope_df <- data.frame(
+  raster_value = slope_values,
+  slope = factor(slope_values, levels = slope_values, labels = slope_labels),
+  new_value = c(10, 20, 30, 40),
+  stringsAsFactors = FALSE
+)
+
+# =================== roads
+
+# Define labels and colors
+
+# Create the color factor palette
+roads_pal <- colorNumeric(palette = "viridis", domain = values(`Distância de rodovias`), na.color = "transparent")
+
+# # Create the data frame with static values
+# roads_df <- data.frame(
+#   raster_value = roads_values,
+#   roads = factor(roads_values, levels = roads_values, labels = roads_labels),
+#   # new_value = c(10, 20, 30, 40),
+#   stringsAsFactors = FALSE
+# )
+# 
+# 
+# =================== Legends
+# Create a list of legends
+# Calculate continuous range for roads
+roads_range <- as.numeric(terra::global(`Distância de rodovias`, range, na.rm = TRUE)) # vector of min, max
+
+legends_list <- list(
+  "Áreas Especiais" = list(
+    pal = spa_pal,
+    values = spa_values,
+    title = "Áreas Especiais",
+    layerId = "legend_Áreas Especiais",
+    labFormat = labelFormat(transform = function(x) spa_df$spa[match(x, spa_df$raster_value)])
+  ),
+  "Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)" = list(
+    pal = PUC_pal,
+    values = PUC_values,
+    title = "PUC",
+    layerId = "legend_Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)",
+    labFormat = labelFormat(transform = function(x) PUC_df$PUC[match(x, PUC_df$raster_value)])
+  ),
+  "Declividade (porcentagem)" = list(
+    pal = slope_pal,
+    values = slope_values,
+    title = "Declividade (%)",
+    layerId = "legend_Declividade (porcentagem)",
+    labFormat = labelFormat(transform = function(x) slope_df$slope[match(x, slope_df$raster_value)])
+  ),
+  "Distância de rodovias" = list(
+    pal = roads_pal,
+    values = roads_range,
+    title = "Distância de rodovias (m)",
+    layerId = "legend_Distância de rodovias",
+    labFormat = NULL # continuous, so default formatting
+  ),
+  "Uso do solo" = list(
+    pal = land_use_pal,
+    values = lu_raster_values,
+    title = "Uso do Solo",
+    layerId = "legend_Uso do Solo",
+    labFormat = labelFormat(transform = function(x) landuse_df$land_use[match(x, landuse_df$raster_value)])
+  ),
+  "Imóveis" = list(
+    pal = Property_pal,
+    values = Property_values,
+    title = "Imóveis",
+    layerId = "legend_Imóveis",
+    labFormat = labelFormat(transform = function(x) Property_df$Property[match(x, Property_df$raster_value)])
+  ),
+  "Índice Integral de Conectividade" = list(
+    pal = IIC_pal,
+    values = IIC_values,
+    title = "IIC",
+    layerId = "legend_IIC",
+    labFormat = labelFormat(transform = function(x) IIC_df$IIC[match(x, IIC_df$raster_value)])
+  )
+  # Optional: Only add below if you want them in graphical controls
+  # "Estradas" = list(...),
+  # "Áreas de Preservação Permanente" = list(...),
+  # "Limite Cantareira" = list(...),
+  # "Limite de Municípios" = list(...),
+  # "Unidades de Conservação" = list(...)
+)

@@ -18,28 +18,34 @@ createHelpModal <- function() {
             tags$ul(
               tags$li(
                 strong("Desenhar Pontos no Mapa:"),
-                " Use o ", tags$img(src = "location-dot-solid.svg", style = "height: 1em; vertical-align: middle;"), " ícone para desenhar seus pontos no mapa."
-                )
-              ),
+                " Use o ", tags$img(src = "Draw a marker.png", style = "height: 2em; vertical-align: middle;"), " ícone para desenhar seus pontos no mapa."
+              )
+            ),
             tags$img(src = "draw.gif", style = "width: 100%;", onclick = "this.style.transform='scale(2)';", ondblclick = "this.style.transform='scale(1)';"),
             tags$ul(
               tags$li(
                 strong("Edit Points:"),
-                " Se precisar ajustar um ponto, clique no ícone ", tags$img(src = "google_edit_square.png", style = "height: 1em; vertical-align: middle;"), ", selecione o ponto que deseja editar e salve a edição."
+                " Se precisar ajustar um ponto, clique no ícone ", tags$img(src = "Edit layers.png", style = "height: 2em; vertical-align: middle;"), ", selecione o ponto que deseja editar e salve a edição."
               )
             ),
             tags$img(src = "edit.gif", style = "width: 100%;", onclick = "this.style.transform='scale(2)';", ondblclick = "this.style.transform='scale(1)';"),
             tags$ul(
               tags$li(
                 strong("Deletar Pontos:"),
-                       " Para remover um ponto, clique no ", tags$img(src = "trash-can-solid.svg", style = "height: 1em; vertical-align: middle;"), " ícone e clique no ponto que deseja deletar."
+                " Para remover um ponto, clique no ", tags$img(src = "Delete layers.png", style = "height: 2em; vertical-align: middle;"), " ícone e clique no ponto que deseja deletar."
               )
             ),
             tags$img(src = "delete.gif", style = "width: 100%;", onclick = "this.style.transform='scale(2)';", ondblclick = "this.style.transform='scale(1)';"),
             tags$ul(
               tags$li(
+                strong("Pesquisar localidades:"),
+                " Para pesquisar lugares pelo nome, clique em ", tags$img(src = "Search.png", style = "height: 2em; vertical-align: middle;"), " e clique no nome do local."
+              )
+            ),
+            tags$ul(
+              tags$li(
                 strong("Pontos Mínimos Necessários:"),
-                       " Por favor, note que você deve desenhar pelo menos ", strong("dois pontos"), " para executar a análise do caminho mais curto."
+                " Por favor, note que você deve desenhar pelo menos ", strong("dois pontos"), " para executar a análise do caminho mais curto."
               ),
               tags$li(
                 strong("Alterar Basemap:"),
@@ -74,10 +80,10 @@ createHelpModal <- function() {
             ),
             p("Para navegar no mapa de forma mais eficaz, use os seguintes ícones:"),
             tags$ul(
-              tags$li("Zoom In: ", icons::fontawesome$regular$`plus-square`, " para dar zoom no mapa."),
-              tags$li("Zoom Out: ", icons::fontawesome$regular$`minus-square`, " para dar zoom out no mapa."),
-              tags$li("Alternar Camadas: ", icon_style(fontawesome("layer-group", style = "solid"), fill = "grey"), " para alternar camadas."),
-              tags$li("Medir Distâncias: ", icons::fontawesome$solid$`ruler-combined`, " para medir distâncias no mapa.")
+              tags$li("Zoom In: ", tags$img(src = "Zoom in.png", style = "height: 2em; vertical-align: middle;"), " para dar zoom no mapa."),
+              tags$li("Zoom Out: ", tags$img(src = "Zoom out.png", style = "height: 2em; vertical-align: middle;"), " para dar zoom out no mapa."),
+              tags$li("Alternar Camadas: ", tags$img(src = "Layers.png", style = "height: 2em; vertical-align: middle;"), " para alternar camadas."),
+              tags$li("Medir Distâncias: ", tags$img(src = "Measure distances and areas.png", style = "height: 2em; vertical-align: middle;"), " para medir distâncias no mapa.")
             )
           )
         ),

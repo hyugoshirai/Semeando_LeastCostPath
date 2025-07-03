@@ -1,16 +1,52 @@
 # Server Function ----------------------------------------------------------
 server <- function(input, output, session) {
+  session$onSessionEnded(function() {
+    stopApp()
+  })
   
   ### 1. Render map
   output$map <- renderLeaflet({
-    initializeMap(`Uso do solo`, `Imóveis`)
+    initializeMap(`Uso do solo`, `Imóveis`, `Limite Cantareira`, `Áreas de Preservação Permanente`, `Classes do PUC (Muito Baixo, Baixo, Médio, Alto e Muito Alto)`, `Declividade (porcentagem)`, `Distância de rodovias`)
   })
   
-  ### 2. Update the basemap when selection changes
+  # Overlay toggling logic (works for overlays only)
+  observe({
+    checked <- input$overlays
+    proxy <- leafletProxy("map")
+    for (g in names(legends_list)) {
+      leg <- legends_list[[g]]
+      if (!is.null(checked) && g %in% checked) {
+        showGroup(proxy, g)
+        legend_args <- list(
+          layerId = leg$layerId,
+          position = "bottomleft",
+          pal = leg$pal,
+          values = leg$values,
+          title = leg$title,
+          opacity = 1,
+          group = g
+        )
+        if (!is.null(leg$labFormat)) legend_args$labFormat <- leg$labFormat
+        do.call(addLegend, c(list(proxy), legend_args))
+      } else {
+        hideGroup(proxy, g)
+        proxy %>% removeControl(layerId = leg$layerId)
+      }
+    }
+  })
+  
+  # Custom basemap selector logic
   observeEvent(input$basemap, {
-    leafletProxy("map") %>%
-      clearTiles() %>%
-      addProviderTiles(providers[[input$basemap]], group = "OpenStreetMap", layerId = "basemap")
+    proxy <- leafletProxy("map")
+    proxy %>% clearTiles()
+    if(input$basemap == "OpenStreetMap") {
+      proxy %>% addTiles(group = "OpenStreetMap")
+    } else if(input$basemap == "Satellite") {
+      proxy %>% addTiles(
+        urlTemplate = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+        group = "Satellite"
+      )
+    }
   })
   
   ### 3. Handle landuse reclassification and map update
@@ -133,7 +169,7 @@ server <- function(input, output, session) {
       })
       
       # Perform rasterization based on the 'values' column
-      rasterized_shp <- rasterizeShapefile(shapefile_data_processed, Uso_do_Solo)
+      rasterized_shp <- rasterizeShapefile(shapefile_data_processed, `Uso do solo`)
       
       # Add the rasterized shapefile to the list
       updateList (rasterized_shp, shapefile_name, all_reclassified_rasters)
@@ -406,7 +442,7 @@ server <- function(input, output, session) {
     for (i in seq_along(rasters)) {
       if (!is.null(rasters[[i]])) {
         # Standardize, calculate, and accumulate in one step
-        accumulated_result <- standardize_and_calculate(rasters[[i]], ref_raster = Uso_do_Solo, multipliers[i], accumulated_result)
+        accumulated_result <- standardize_and_calculate(rasters[[i]], ref_raster = `Uso do solo`, multipliers[i], accumulated_result)
       }
     }
     # Check if the accumulated result is valid

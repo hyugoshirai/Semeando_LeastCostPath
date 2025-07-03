@@ -88,7 +88,6 @@ getCurrentLayerNames <- reactive({
   # shapefile_list <- shapefile_names_list()
   shapefiles_names <- names (all_shapefiles())
   # Combine raster names with shapefile names
-  # c(names(Uso_do_solo), raster_names, shapefiles_names)#, "Result raster", shapefile_list)
   c(shapefiles_names, aggregated_raster_names)#, "Result raster", shapefile_list)
 })
 

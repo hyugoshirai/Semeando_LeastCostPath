@@ -1,51 +1,12 @@
-# # Check if 'remotes' package is installed
-# if (!requireNamespace("remotes", quietly = TRUE)) {
-#   install.packages("remotes")
-# }
-# 
-# # Function to check if a package is installed, if not, install it
-# install_if_needed <- function(package, github_repo = NULL) {
-#   if (!requireNamespace(package, quietly = TRUE)) {
-#     if (!is.null(github_repo)) {
-#       message(paste(package, "is not installed. Installing from GitHub repository:", github_repo))
-#       remotes::install_github(github_repo)
-#     } else {
-#       message(paste(package, "is not installed. Installing from CRAN."))
-#       install.packages(package)
-#     }
-#   } else {
-#     message(paste(package, "is already installed."))
-#   }
-# }
-# 
-# # Check and install the 'icons' package from GitHub if not already installed
-# install_if_needed("icons", github_repo = "mitchelloharawild/icons")
-# 
-# # Packages list
-# packages <- c("shiny", "leaflet", "raster", "DT", "shinyWidgets", 
-#               "sf", "leafem", "mapview", "gdistance", "dplyr", 
-#               "shinyFiles", "zip", "leaflet.extras", 
-#               "shinyjs", "classInt", "leastcostpath", "terra", "units", "tools",
-#               "shinyalert", "icons", "fontawesome", "RColorBrewer")
-# # library(icons)
-# # download_fontawesome() #only if needed
-# 
-# # Instalar pacotes que não estão instalados
-# new_packages <- packages[!(packages %in% installed.packages()[, "Package"])]
-# if (length(new_packages)) {
-#   install.packages(new_packages)
-# }
-
 # Load required packages ----
 library("classInt")
 library("dplyr")
 library ("DT")
-library("fontawesome")
 library("gdistance")
-library("icons")
 library("leafem")
 library("leaflet")
 library("leaflet.extras")
+library("leastcostpath")
 library("mapview")
 library("raster")
 library("RColorBrewer")
@@ -88,7 +49,9 @@ CategorizeAndReprojectObjectsInGlobalEnv()
 
 # Define custom control names
 custom_control <- setdiff (c(names (default_layers), names (default_shapefiles)),
-                           c())
+                           c("Propriedades rurais (categorias: pequena, média e grande)"))
+# Define Base Map Providers ----
+base_groups <- c("OpenStreetMap", "Satellite")
 
 ### Define reactive values ----
 all_points <- reactiveVal(list()) # For storing all points
